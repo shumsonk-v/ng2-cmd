@@ -57,7 +57,7 @@ const fileContent = {
 }; 
 
 let toCamelCase = (str) => {
-    return str.replace(/-([a-z])/g, (g) => { return g[1].toUpperCase(); });
+    return str.replace(/[-_]([a-z])/g, (g) => { return g[1].toUpperCase(); });
 };
 
 let execCallback = (error, stdout, stderr) => {
@@ -96,63 +96,77 @@ let createModuleFunc = (targetPath,options) => {
         }
         targetDirectory = targetDirectory.join("\\");
 
-        if (targetDirectory) {
-            if (!fs.existsSync(targetDirectory)) {
-                createDirCommand += targetDirectory;
-                exec(createDirCommand, execCallback);
-            }
-        }
+        
         if (moduleName) {
-            let componentName = "",
-                newModuleName = "", tmpComponentName = "",
-                componentSelector = "cmp-" + componentName;
-            
-            tmpComponentName = toCamelCase(moduleName);                
-            componentName = tmpComponentName[0].toUpperCase() + tmpComponentName.substring(1, tmpComponentName.length);
-            newModuleName = componentName + "Module";
-            componentName += "Component";
-            
-            fileExtList.forEach((item) => {
-                let newFileContent = "", targetFilePath;
-
-                if (item !== "index.ts") {
-                    targetFilePath = targetDirectory + "\\" + moduleName + item;
-                } else {
-                    targetFilePath = targetDirectory + "\\" + item;
+            let matchInvalidPattern = moduleName.match(/[0-9]/g),
+                validPattern = new RegExp('^[a-zA-Z]+([-_]*[a-zA-Z]+)*$');
+            if (matchInvalidPattern && matchInvalidPattern.length > 0) {
+                console.error(chalk.red("Module name should not contains any number!"));
+            } else if (!validPattern.test(moduleName)) {
+                console.error(chalk.red("Invalid module name! Only alphabet characters, hyphen(-) and underscore (_) are supported and must be led and end with alphabet ONLY."));
+            } else {
+                if (targetDirectory) {
+                    if (!fs.existsSync(targetDirectory)) {
+                        createDirCommand += targetDirectory;
+                        exec(createDirCommand, execCallback);
+                    }
                 }
 
-                targetFilePath = targetFilePath.replace(/\\/g, "/");
-                if (targetFilePath[0] === "/" || targetFilePath[0] === "\\") {
-                    targetFilePath = targetFilePath.substring(1, targetFilePath.length);
+                let componentName = "",
+                    newModuleName = "", tmpComponentName = "",
+                    componentSelector = "cmp-" + moduleName;
+                
+                tmpComponentName = toCamelCase(moduleName);                
+                componentName = tmpComponentName[0].toUpperCase() + tmpComponentName.substring(1, tmpComponentName.length);
+                newModuleName = componentName + "Module";
+                componentName += "Component";
+
+                if (/(_)/g.test(componentSelector)) {
+                    componentSelector = componentSelector.replace(/(_)/g, '-');
                 }
                 
-                if (!fs.existsSync(targetFilePath)) {
-                    if (item === ".component.ts") {
-                        newFileContent = fileContent.component.join('\n');                     
-                    }
-                    if (item === ".routes.ts") {
-                        newFileContent = fileContent.route.join('\n');
-                    }
-                    if (item === ".module.ts") {
-                        newFileContent = fileContent.module.join('\n');
-                    }
-                    if (item === "index.ts") {
-                        newFileContent = fileContent.index.join('\n');
+                fileExtList.forEach((item) => {
+                    let newFileContent = "", targetFilePath;
+
+                    if (item !== "index.ts") {
+                        targetFilePath = targetDirectory + "\\" + moduleName + item;
+                    } else {
+                        targetFilePath = targetDirectory + "\\" + item;
                     }
 
-                    newFileContent = newFileContent.replace(/\{(component_selector)\}/g, componentSelector);
-                    newFileContent = newFileContent.replace(/\{(component_name)\}/g, componentName);
-                    newFileContent = newFileContent.replace(/\{(module_name)\}/g, moduleName);
-                    newFileContent = newFileContent.replace(/\{(new_module_name)\}/g, newModuleName);
-                                        
-                    fs.writeFile(targetFilePath, newFileContent, (err) => {
-                        if (err) throw err;
-                        console.log(chalk.green(targetFilePath + " created successfully!"));
-                    });
-                } else {
-                    console.log(chalk.gray(targetFilePath + " skipped because it's already exist."));
-                }
-            });
+                    targetFilePath = targetFilePath.replace(/\\/g, "/");
+                    if (targetFilePath[0] === "/" || targetFilePath[0] === "\\") {
+                        targetFilePath = targetFilePath.substring(1, targetFilePath.length);
+                    }
+                    
+                    if (!fs.existsSync(targetFilePath)) {
+                        if (item === ".component.ts") {
+                            newFileContent = fileContent.component.join('\n');                     
+                        }
+                        if (item === ".routes.ts") {
+                            newFileContent = fileContent.route.join('\n');
+                        }
+                        if (item === ".module.ts") {
+                            newFileContent = fileContent.module.join('\n');
+                        }
+                        if (item === "index.ts") {
+                            newFileContent = fileContent.index.join('\n');
+                        }
+
+                        newFileContent = newFileContent.replace(/\{(component_selector)\}/g, componentSelector);
+                        newFileContent = newFileContent.replace(/\{(component_name)\}/g, componentName);
+                        newFileContent = newFileContent.replace(/\{(module_name)\}/g, moduleName);
+                        newFileContent = newFileContent.replace(/\{(new_module_name)\}/g, newModuleName);
+                                            
+                        fs.writeFile(targetFilePath, newFileContent, (err) => {
+                            if (err) throw err;
+                            console.log(chalk.green(targetFilePath + " created successfully!"));
+                        });
+                    } else {
+                        console.log(chalk.gray(targetFilePath + " skipped because it's already exist."));
+                    }
+                });
+            }            
         }        
     }
     

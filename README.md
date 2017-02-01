@@ -1,6 +1,6 @@
-ng2-cmd
-=
-This is a simple command line to automatically create module, routes, component and index.ts files for Angular2 Webpack Starter or Angular2 project with component lazy load feature (ng-router-loader).
+The simple command to create files for angular2 module
+
+This is a command line to automatically create module, routes, component and index.ts files for Angular2 Webpack Starter or Angular2 project with component lazy load feature (ng-router-loader).
 
 Now there is only one command with only one option so it's very easy to use. To use the command, simply type
 
