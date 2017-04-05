@@ -16,6 +16,7 @@ This command will create the following files:
  - src/app/component/templates/templates.component.ts
  - src/app/component/templates/templates.module.ts
  - src/app/component/templates/templates.routes.ts
+ - src/app/component/templates/templates.spec.ts
  - src/app/component/templates/index.ts
 
 The last string item (after divided by *slash ( / )*)  of the given path will be the used as a module name and component name (see the generated file contents). It also create the folder with the same name as specified module name.
@@ -30,6 +31,7 @@ This command will create the following files:
  - src/app/component/my-module.component.ts
  - src/app/component/my-module.module.ts
  - src/app/component/my-module.routes.ts
+ - src/app/component/my-module.spec.ts
  - src/app/component/index.ts
 
 
